@@ -72,7 +72,11 @@ class MyHomePage extends StatelessWidget {
                   title: const Text('Standortabfrage'),
                   onTap: () {
                     Navigator.pop(context);
-                    //MaterialPageRoute(builder: (context) => LocationPage());
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LocationPage()),
+                    );
                   },
                 ),
               ),
