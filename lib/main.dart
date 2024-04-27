@@ -1,8 +1,12 @@
 import 'package:baflutter2/presentation/widgets/location_page.dart';
+import 'package:baflutter2/presentation/widgets/notifications_service.dart';
+import 'package:baflutter2/presentation/widgets/timer_page.dart';
 import 'package:flutter/material.dart';
 import 'presentation/widgets/login_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
   runApp(const MyApp());
 }
 
@@ -86,6 +90,11 @@ class MyHomePage extends StatelessWidget {
                   title: const Text('Benachrichtigungen'),
                   onTap: () {
                     Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TimerPage()),
+                    );
                   },
                 ),
               ),
