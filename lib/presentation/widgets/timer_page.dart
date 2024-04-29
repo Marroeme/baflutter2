@@ -10,6 +10,8 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
+  final NotificationService _notificationService = NotificationService();
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -17,14 +19,22 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Timer? _timer;
-  int _start = 5; // Standardmäßig auf 60 Sekunden gesetzt
+  static const int initTimerZeit = 5;
+  int _start = initTimerZeit;
 
   void startTimer() {
+    _timer
+        ?.cancel(); // Stellt sicher, dass der aktuelle Timer gestoppt wird, bevor ein neuer gestartet wird.
+
+    setState(() {
+      _start =
+          initTimerZeit; // Oder ein anderer Wert, je nach deiner Anforderung.
+    });
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_start == 0) {
         setState(() {
           timer.cancel();
-          NotificationService().showNotification();
+          _notificationService.showNotification();
         });
       } else {
         setState(() {
