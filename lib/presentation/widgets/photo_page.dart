@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:baflutter2/presentation/widgets/image_display_page.dart';
-import 'package:baflutter2/presentation/widgets/take_picture.dart';
+import 'package:logger/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:baflutter2/presentation/widgets/image_display_page.dart';
+import 'package:baflutter2/presentation/widgets/take_picture.dart';
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({super.key});
@@ -14,13 +15,15 @@ class PhotoPage extends StatefulWidget {
 }
 
 class _PhotoPageState extends State<PhotoPage> {
-  @override
-  void initState() async {
-    super.initState();
-    await _loadImages();
-  }
+  final Logger logger = Logger();
 
   final List<File> _images = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImages();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,54 +56,53 @@ class _PhotoPageState extends State<PhotoPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCamera(),
+        onPressed: _openCamera,
         child: const Icon(Icons.camera_alt),
       ),
     );
   }
 
   Future<void> _openCamera() async {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
+    try {
+      final cameras = await availableCameras();
+      final firstCamera = cameras.first;
 
-    final result = await Navigator.push<File>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TakePicture(camera: firstCamera),
-      ),
-    );
+      if (!mounted) return;
+      final result = await Navigator.push<File>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TakePicture(camera: firstCamera),
+        ),
+      );
 
-    if (result != null) {
-      setState(() {
-        _images.add(result);
-      });
+      if (result != null) {
+        setState(() {
+          _images.add(result);
+        });
+      }
+    } catch (e) {
+      logger.e('Fehler beim Öffnen der Kamera: $e');
     }
   }
 
   Future<void> _loadImages() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final List<File> images = [];
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final List<File> images = [];
 
-    // Alle Files auflisten
-    final fileList = directory.listSync();
-    for (var file in fileList) {
-      if (file.path.endsWith('.jpg') || file.path.endsWith('.png')) {
-        images.add(File(file.path));
+      // List all files in the directory
+      final fileList = directory.listSync();
+      for (var file in fileList) {
+        if (file.path.endsWith('.jpg') || file.path.endsWith('.png')) {
+          images.add(File(file.path));
+        }
       }
-    }
 
-    // State mit neu geladenen Bildern updaten
-    setState(() {
-      _images.addAll(images);
-    });
-  }
-
-  void updateImageList(File updatedImage) {
-    int index = _images.indexWhere((img) => img.path == updatedImage.path);
-    if (index != -1) {
       setState(() {
-        _images[index] = updatedImage;
+        _images.addAll(images);
       });
+    } catch (e) {
+      logger.e('Fehler beim Laden der Bilder: $e');
     }
   }
 
@@ -114,9 +116,7 @@ class _PhotoPageState extends State<PhotoPage> {
           actions: <Widget>[
             TextButton(
               child: const Text('Abbrechen'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text('Löschen'),
@@ -131,10 +131,14 @@ class _PhotoPageState extends State<PhotoPage> {
     );
   }
 
-  void _deleteImage(File imageFile, int index) {
-    setState(() {
-      _images.removeAt(index);
-      imageFile.deleteSync(); // Löscht die Datei synchron aus dem Dateisystem
-    });
+  void _deleteImage(File imageFile, int index) async {
+    try {
+      await imageFile.delete();
+      setState(() {
+        _images.removeAt(index);
+      });
+    } catch (e) {
+      logger.e('Fehler beim Löschen der Datei: $e');
+    }
   }
 }

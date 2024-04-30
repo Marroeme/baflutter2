@@ -13,7 +13,6 @@ class AuftragPDFPage extends StatefulWidget {
 
 class _AuftragPDFPageState extends State<AuftragPDFPage> {
   final _formKey = GlobalKey<FormState>();
-
   final List<String> _schadenartDropdownOptions = [
     'Feuer',
     'Einbruchdiebstahl',
@@ -23,12 +22,7 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
     'Elementar',
     'Sonstiges'
   ];
-  final List<String> _anredeDropdownOptions = [
-    'Herr',
-    'Frau',
-    'Firma',
-  ];
-
+  final List<String> _anredeDropdownOptions = ['Herr', 'Frau', 'Firma'];
   String? _selectedSchadenartValue;
   String? _selectedAnredeValue;
   final TextEditingController _schadensnummerController =
@@ -36,7 +30,6 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
   final TextEditingController _versicherungszweigController =
       TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-
   final TextEditingController _titelController = TextEditingController();
   final TextEditingController _vornameController = TextEditingController();
   final TextEditingController _nachnameController = TextEditingController();
@@ -47,7 +40,6 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
 
   @override
   void dispose() {
-    // Controller bereinigen, wenn das Widget entfernt wird
     _dateController.dispose();
     _schadensnummerController.dispose();
     _versicherungszweigController.dispose();
@@ -74,22 +66,20 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
     }
   }
 
-  Widget buildTextFormField({
-    required String label,
-    void Function()? onTap,
-    String? Function(String?)? validator,
-    TextEditingController? controller,
-    Widget? suffixIcon,
-  }) {
+  Widget _buildTextFormField(
+      {required String label,
+      void Function()? onTap,
+      String? Function(String?)? validator,
+      TextEditingController? controller,
+      Widget? suffixIcon}) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          suffixIcon: suffixIcon,
-        ),
+            labelText: label,
+            border: const OutlineInputBorder(),
+            suffixIcon: suffixIcon),
         validator: validator,
         onTap: onTap,
         readOnly: onTap != null,
@@ -97,14 +87,56 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
     );
   }
 
-  // ignore: unused_element
-  void _showSavedSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Daten gespeichert"),
-        duration: Duration(seconds: 3),
-      ),
-    );
+  Future<void> _generateAndDisplayPdf() async {
+    if (_formKey.currentState!.validate()) {
+      final pdf = pw.Document();
+      final headerFont = pw.Font.helveticaBold();
+      final textFont = pw.Font.helvetica();
+
+      pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Blanko-Auftrag',
+                      style: pw.TextStyle(font: headerFont, fontSize: 24)),
+                  pw.SizedBox(height: 20),
+                  pw.Text('Schadensnummer: ${_schadensnummerController.text}',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Text('Schadenart: $_selectedSchadenartValue',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Text(
+                      'Versicherungszweig: ${_versicherungszweigController.text}',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Text('Schadendatum: ${_dateController.text}',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Divider(),
+                  pw.Text('Kontaktdaten',
+                      style: pw.TextStyle(font: headerFont, fontSize: 20)),
+                  pw.SizedBox(height: 20),
+                  pw.Text(
+                      '$_selectedAnredeValue ${_titelController.text} ${_vornameController.text} ${_nachnameController.text}',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Text(_kontaktStrasseController.text,
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                  pw.Text(
+                      '${_kontaktPLZController.text} ${_kontaktOrtController.text}',
+                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                ]);
+          }));
+
+      // Zeige das PDF im Viewer an
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Bitte füllen Sie alle erforderlichen Felder aus"),
+            duration: Duration(seconds: 2)),
+      );
+    }
   }
 
   @override
@@ -112,12 +144,8 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Blanko-Auftrag',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Blanko-Auftrag',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
@@ -129,155 +157,92 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
         key: _formKey,
         child: ListView(
           children: [
-            buildTextFormField(
-              controller: _schadensnummerController,
-              label: 'Schadensnummer',
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Bitte Schadensnummer eingeben'
-                  : null,
-            ),
+            _buildTextFormField(
+                controller: _schadensnummerController,
+                label: 'Schadensnummer',
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Bitte Schadensnummer eingeben'
+                    : null),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
                 value: _selectedSchadenartValue,
                 decoration: const InputDecoration(
-                  labelText: 'Schadenart',
-                  border: OutlineInputBorder(),
-                ),
+                    labelText: 'Schadenart', border: OutlineInputBorder()),
                 items: _schadenartDropdownOptions
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(
-                      value,
-                    ),
+                    child: Text(value),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  // Aktualisiere den ausgewählten Wert und den State
                   setState(() {
                     _selectedSchadenartValue = newValue;
                   });
                 },
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Bitte eine Schadenart auswählen';
-                  }
-                  return null;
-                },
+                validator: (String? value) => value == null || value.isEmpty
+                    ? 'Bitte eine Schadenart auswählen'
+                    : null,
               ),
             ),
-            buildTextFormField(
-              controller: _versicherungszweigController,
-              label: 'Versicherungszweig',
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Bitte Versicherungszweig eingeben'
-                  : null,
-            ),
-            buildTextFormField(
-              label: 'Schadendatum',
-              controller: _dateController,
-              suffixIcon: const Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context),
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Bitte wählen Sie ein Datum'
-                  : null,
-            ),
+            _buildTextFormField(
+                controller: _versicherungszweigController,
+                label: 'Versicherungszweig',
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Bitte Versicherungszweig eingeben'
+                    : null),
+            _buildTextFormField(
+                label: 'Schadendatum',
+                controller: _dateController,
+                suffixIcon: const Icon(Icons.calendar_today),
+                onTap: () => _selectDate(context),
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Bitte wählen Sie ein Datum'
+                    : null),
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-              child: Text('Kontaktdaten',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
+                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                child: Text('Kontaktdaten',
+                    style:
+                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
                 value: _selectedAnredeValue,
                 decoration: const InputDecoration(
-                  labelText: 'Anrede',
-                  border: OutlineInputBorder(),
-                ),
+                    labelText: 'Anrede', border: OutlineInputBorder()),
                 items: _anredeDropdownOptions
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(
-                      value,
-                    ),
+                    child: Text(value),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  // Aktualisiere den ausgewählten Wert und den State
                   setState(() {
                     _selectedAnredeValue = newValue;
                   });
                 },
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Bitte eine Anrede auswählen';
-                  }
-                  return null;
-                },
+                validator: (String? value) => value == null || value.isEmpty
+                    ? 'Bitte eine Anrede auswählen'
+                    : null,
               ),
             ),
-            buildTextFormField(controller: _titelController, label: 'Titel'),
-            buildTextFormField(
+            _buildTextFormField(controller: _titelController, label: 'Titel'),
+            _buildTextFormField(
                 controller: _vornameController, label: 'Vorname'),
-            buildTextFormField(
+            _buildTextFormField(
                 controller: _nachnameController, label: 'Nachname'),
-            buildTextFormField(
+            _buildTextFormField(
                 controller: _kontaktStrasseController,
                 label: 'Straße/Hausnummer'),
-            buildTextFormField(controller: _kontaktPLZController, label: 'PLZ'),
-            buildTextFormField(controller: _kontaktOrtController, label: 'Ort'),
+            _buildTextFormField(
+                controller: _kontaktPLZController, label: 'PLZ'),
+            _buildTextFormField(
+                controller: _kontaktOrtController, label: 'Ort'),
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> _generateAndDisplayPdf() async {
-    final pdf = pw.Document();
-    final headerFont = pw.Font.helveticaBold();
-    final textFont = pw.Font.helvetica();
-
-    pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('Blanko-Auftrag',
-                    style: pw.TextStyle(font: headerFont, fontSize: 24)),
-                pw.SizedBox(height: 20),
-                pw.Text('Schadensnummer: ${_schadensnummerController.text}',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Text('Schadenart: $_selectedSchadenartValue',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Text(
-                    'Versicherungszweig: ${_versicherungszweigController.text}',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Text('Schadendatum: ${_dateController.text}',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Divider(),
-                pw.Text('Kontaktdaten',
-                    style: pw.TextStyle(font: headerFont, fontSize: 20)),
-                pw.Text(
-                    '$_selectedAnredeValue ${_titelController.text} ${_vornameController.text} ${_nachnameController.text}',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Text(_kontaktStrasseController.text,
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-                pw.Text(
-                    '${_kontaktPLZController.text} ${_kontaktOrtController.text}',
-                    style: pw.TextStyle(font: textFont, fontSize: 18)),
-              ]);
-        }));
-
-    // Zeige das PDF im Viewer an
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
     );
   }
 }

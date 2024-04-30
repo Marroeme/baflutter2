@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -50,27 +49,31 @@ class _TakePictureState extends State<TakePicture> {
       appBar: AppBar(title: const Text('Kamera')),
       body: CameraPreview(_controller!),
       floatingActionButton: FloatingActionButton(
+        onPressed: _takePicture,
         child: const Icon(Icons.camera),
-        onPressed: () async {
-          try {
-            if (_controller == null || !_controller!.value.isInitialized) {
-              logger.e("Kamera ist nicht initialisiert.");
-              return;
-            }
-            final image = await _controller!.takePicture();
-            final directory =
-                await getApplicationDocumentsDirectory(); // Dauerhafter Speicherort
-            final imagePath =
-                '${directory.path}/${DateTime.now().toIso8601String()}.jpg';
-            final imageFile = File(imagePath);
-            await image.saveTo(imagePath);
-            if (!mounted) return;
-            Navigator.pop(context, imageFile);
-          } catch (e) {
-            logger.e("Fehler beim Foto machen: $e");
-          }
-        },
       ),
     );
+  }
+
+  Future<void> _takePicture() async {
+    try {
+      if (_controller == null || !_controller!.value.isInitialized) {
+        logger.e("Kamera ist nicht initialisiert.");
+        return;
+      }
+      final image = await _controller!.takePicture();
+      final directory =
+          await getApplicationDocumentsDirectory(); // Dauerhafter Speicherort
+      final imagePath =
+          '${directory.path}/${DateTime.now().toIso8601String()}.jpg';
+      final imageFile = File(imagePath);
+      await image.saveTo(imagePath);
+
+      if (!mounted) return; // Sicherstellen, dass das Widget noch existiert
+
+      Navigator.pop(context, imageFile);
+    } catch (e) {
+      logger.e("Fehler beim Foto machen: $e");
+    }
   }
 }

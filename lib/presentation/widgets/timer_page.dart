@@ -34,7 +34,8 @@ class _TimerPageState extends State<TimerPage> {
       if (_start == 0) {
         setState(() {
           timer.cancel();
-          _notificationService.showNotification();
+          _notificationService.showNotification('timer_channel',
+              'Timer Benachrichtigung', 'Notification channel für timer');
         });
       } else {
         setState(() {

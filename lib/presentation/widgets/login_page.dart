@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:logger/logger.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final LocalAuthentication auth = LocalAuthentication();
-
   final Logger logger = Logger();
 
   @override
@@ -26,15 +30,13 @@ class LoginPage extends StatelessWidget {
             ElevatedButton.icon(
               icon: const Icon(Icons.face),
               label: const Text("Face ID"),
-              onPressed: () =>
-                  _authenticate(context, biometricMethod: BiometricType.face),
+              onPressed: () => _authenticate(BiometricType.face),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               icon: const Icon(Icons.fingerprint),
               label: const Text("Fingerprint"),
-              onPressed: () => _authenticate(context,
-                  biometricMethod: BiometricType.fingerprint),
+              onPressed: () => _authenticate(BiometricType.fingerprint),
             ),
           ],
         ),
@@ -42,13 +44,8 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Future<void> _authenticate(BuildContext context,
-      {required BiometricType biometricMethod}) async {
+  Future<void> _authenticate(BiometricType biometricMethod) async {
     bool authenticated = false;
-
-    // Referenz auf den Navigator vor der asynchronen Operation sichern
-    NavigatorState navigator = Navigator.of(context);
-
     try {
       authenticated = await auth.authenticate(
         localizedReason: 'Scan your fingerprint (or face) to authenticate',
@@ -60,10 +57,13 @@ class LoginPage extends StatelessWidget {
       );
     } catch (e) {
       logger.e('Error using local authentication: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Authentifikation fehlgeschlagen: $e')));
     }
-
     if (authenticated) {
-      navigator.pushReplacement(
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const MyHomePage()),
       );
     }

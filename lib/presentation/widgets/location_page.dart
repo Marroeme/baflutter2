@@ -17,30 +17,29 @@ class _LocationPageState extends State<LocationPage> {
     mapController = controller;
   }
 
-  void _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Überprüfe, ob der Standortdienst aktiviert ist.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Standortdienste sind deaktiviert.');
+      _showErrorDialog('Standortdienste sind deaktiviert.');
+      return;
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Standortberechtigungen sind abgelehnt.');
+        _showErrorDialog('Standortberechtigungen sind abgelehnt.');
+        return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      return Future.error(
+      _showErrorDialog(
           'Standortberechtigungen sind permanent abgelehnt; wir können keine Anfragen machen.');
+      return;
     }
 
-    var position = await Geolocator.getCurrentPosition();
+    Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _center = LatLng(position.latitude, position.longitude);
     });
@@ -50,6 +49,24 @@ class _LocationPageState extends State<LocationPage> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Fehler"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -69,15 +86,15 @@ class _LocationPageState extends State<LocationPage> {
             padding: const EdgeInsets.only(top: 82),
           ),
           Positioned(
-            top: 40, // Anpassbar für die Positionierung
-            left: 10, // Anpassbar für die Positionierung
+            top: 40,
+            left: 10,
             child: SafeArea(
-              // Stellt sicher, dass der Button innerhalb der sichtbaren Fläche liegt
               child: CircleAvatar(
-                backgroundColor: Colors.white, // Hintergrundfarbe des Buttons
+                backgroundColor: Colors.white,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.black),
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Zurück zur Startseite', // Tooltip hinzugefügt
                 ),
               ),
             ),
