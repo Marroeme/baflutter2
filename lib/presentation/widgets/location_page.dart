@@ -11,7 +11,7 @@ class LocationPage extends StatefulWidget {
 
 class _LocationPageState extends State<LocationPage> {
   GoogleMapController? mapController;
-  LatLng _center = const LatLng(45.521563, -122.677433); // Startposition
+  LatLng _center = const LatLng(51.9606649, 7.6261347); // Startposition
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -34,8 +34,7 @@ class _LocationPageState extends State<LocationPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showErrorDialog(
-          'Standortberechtigungen sind permanent abgelehnt; wir können keine Anfragen machen.');
+      _showErrorDialog('Standortberechtigungen sind permanent abgelehnt.');
       return;
     }
 

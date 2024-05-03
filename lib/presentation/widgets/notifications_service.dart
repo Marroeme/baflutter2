@@ -20,23 +20,35 @@ class NotificationService {
   // Benachrichtigungseinstellungen für beide Plattformen initialisieren
   Future<void> init() async {
     try {
+      // Initialisierungseinstellungen für Android
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
+      // Initialisierungseinstellungen für iOS
       const DarwinInitializationSettings initializationSettingsIOS =
           DarwinInitializationSettings(
               requestAlertPermission: true,
               requestBadgePermission: true,
               requestSoundPermission: true);
 
+      // Gesamte Initialisierungseinstellungen
       const InitializationSettings initializationSettings =
           InitializationSettings(
               android: initializationSettingsAndroid,
               iOS: initializationSettingsIOS);
 
+      // Initialisierung des Plugins
       await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+      // Anfordern der Benachrichtigungsberechtigungen für Android
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+
+      // Anfordern der Benachrichtigungsberechtigungen für iOS ist bereits in den InitializationSettings eingebettet
     } catch (e) {
-      logger.e('Failed to initialize notifications: $e');
+      logger.e('Initialisierung der Benachrichtigungen fehlgeschlagen: $e');
     }
   }
 
@@ -65,8 +77,7 @@ class NotificationService {
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
           android: androidPlatformChannelSpecifics,
-          iOS: darwinPlatformChannelSpecifics,
-          macOS: darwinPlatformChannelSpecifics);
+          iOS: darwinPlatformChannelSpecifics);
 
       await flutterLocalNotificationsPlugin.show(
           0, // Notification ID
@@ -74,7 +85,7 @@ class NotificationService {
           'Timer abgelaufen', // Notification body
           platformChannelSpecifics);
     } catch (e) {
-      logger.e('Failed to show notification: $e');
+      logger.e('Benachrichtigung anzeigen fehlgeschlagen: $e');
     }
   }
 }

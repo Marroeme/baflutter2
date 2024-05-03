@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Authentifikation fehlgeschlagen: $e')));
     }
-    if (authenticated) {
+    if (!authenticated) {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const MyHomePage()),

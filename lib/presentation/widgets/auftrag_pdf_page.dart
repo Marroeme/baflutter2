@@ -100,29 +100,30 @@ class _AuftragPDFPageState extends State<AuftragPDFPage> {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('Blanko-Auftrag',
-                      style: pw.TextStyle(font: headerFont, fontSize: 24)),
+                      style: pw.TextStyle(font: headerFont, fontSize: 36)),
                   pw.SizedBox(height: 20),
                   pw.Text('Schadensnummer: ${_schadensnummerController.text}',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Text('Schadenart: $_selectedSchadenartValue',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Text(
                       'Versicherungszweig: ${_versicherungszweigController.text}',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Text('Schadendatum: ${_dateController.text}',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Divider(),
+                  pw.SizedBox(height: 10),
                   pw.Text('Kontaktdaten',
-                      style: pw.TextStyle(font: headerFont, fontSize: 20)),
+                      style: pw.TextStyle(font: headerFont, fontSize: 32)),
                   pw.SizedBox(height: 20),
                   pw.Text(
                       '$_selectedAnredeValue ${_titelController.text} ${_vornameController.text} ${_nachnameController.text}',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Text(_kontaktStrasseController.text,
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                   pw.Text(
                       '${_kontaktPLZController.text} ${_kontaktOrtController.text}',
-                      style: pw.TextStyle(font: textFont, fontSize: 18)),
+                      style: pw.TextStyle(font: textFont, fontSize: 30)),
                 ]);
           }));
 

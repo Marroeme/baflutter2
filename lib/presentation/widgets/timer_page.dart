@@ -27,8 +27,7 @@ class _TimerPageState extends State<TimerPage> {
         ?.cancel(); // Stellt sicher, dass der aktuelle Timer gestoppt wird, bevor ein neuer gestartet wird.
 
     setState(() {
-      _start =
-          initTimerZeit; // Oder ein anderer Wert, je nach deiner Anforderung.
+      _start = initTimerZeit;
     });
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_start == 0) {
@@ -39,6 +38,7 @@ class _TimerPageState extends State<TimerPage> {
         });
       } else {
         setState(() {
+          // Solange der Timer nicht auf 0 ist, wird sein State aktualisiert und somit runtergezählt.
           _start--;
         });
       }
