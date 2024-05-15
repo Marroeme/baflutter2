@@ -28,15 +28,9 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton.icon(
-              icon: const Icon(Icons.face),
-              label: const Text("Face ID"),
-              onPressed: () => _authenticate(BiometricType.face),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.fingerprint),
-              label: const Text("Fingerprint"),
-              onPressed: () => _authenticate(BiometricType.fingerprint),
+              icon: const Icon(Icons.account_circle),
+              label: const Text("Biometrische Authentifizierung"),
+              onPressed: () => _authenticate(),
             ),
           ],
         ),
@@ -44,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _authenticate(BiometricType biometricMethod) async {
+  Future<void> _authenticate() async {
     bool authenticated = false;
     try {
       authenticated = await auth.authenticate(
